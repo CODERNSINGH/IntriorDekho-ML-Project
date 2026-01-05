@@ -58,10 +58,9 @@ def estimated_price(item: Item):  # Accept request body
 
      # Correct import
 
-    genai.configure(api_key="AIzaSyCw8YJ697rvQSbzOO6677yPhZekbKlNjZc")  # Replace with your actual API key
+    genai.configure(api_key="")  # Replace with your actual API key
 
     model = genai.GenerativeModel("gemini-2.5-flash")  # Or "gemini-1.5-pro", etc.
-
     response = model.generate_content(f"Your are AI real estate expert. You are given the following details of a property {item.dict()} and you have to provide an estimated price for the property in INR. Provide only the price in INR without any other text. and format the number with commas. For example, 25,00,000 for 25 lakhs or 1,20,00,000 for 1.2 crores. and INR or Ruppes symbol")
     print(response.text)
 
