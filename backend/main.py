@@ -47,7 +47,7 @@
 #     # Run AI generation
 #     result = pipe(
 #         prompt=prompt,
-#         image=image,
+#         image=∏image,
 #         num_inference_steps=30,
 #         image_guidance_scale=1.5
 #     ).images[0]
@@ -134,3 +134,76 @@ async def redesign_room(file: UploadFile, prompt: str = Form(...)):
 
     return FileResponse(output_path, media_type="image/jpeg")
 
+
+
+# Adding Price Pridiction API
+
+import joblib
+import pandas as pd
+
+price_model = joblib.load("interior_price_model.pkl")
+print("💰 Price model loaded")
+
+
+from pydantic import BaseModel
+from typing import List
+
+class PriceRequest(BaseModel):
+    propertyType: str
+    bhk: int
+    area_sqft: int
+    bathrooms: int
+    city: str
+    pincode: int
+    floor_number: int
+    building_age_years: int
+    locality_class: str
+    designStyle: str
+    materialQuality: str
+    furnishingLevel: str
+    workScope: List[str]
+    kitchen_type: str
+    wardrobe_count: int
+    false_ceiling_area_pct: int
+    flooring_type: str
+    paint_type: str
+    budget_range: str
+    completionTime: str
+    urgency_level: str
+    contractor_grade: str
+
+
+@app.post("/predict_price")
+def predict_price(data: PriceRequest):
+
+    row = {
+        "propertyType": data.propertyType,
+        "bhk": data.bhk,
+        "area_sqft": data.area_sqft,
+        "bathrooms": data.bathrooms,
+        "city": data.city,
+        "pincode": data.pincode,
+        "floor_number": data.floor_number,
+        "building_age_years": data.building_age_years,
+        "locality_class": data.locality_class,
+        "designStyle": data.designStyle,
+        "materialQuality": data.materialQuality,
+        "furnishingLevel": data.furnishingLevel,
+        "workScope": ",".join(data.workScope),
+        "kitchen_type": data.kitchen_type,
+        "wardrobe_count": data.wardrobe_count,
+        "false_ceiling_area_pct": data.false_ceiling_area_pct,
+        "flooring_type": data.flooring_type,
+        "paint_type": data.paint_type,
+        "budget_range": data.budget_range,
+        "completionTime": data.completionTime,
+        "urgency_level": data.urgency_level,
+        "contractor_grade": data.contractor_grade
+    }
+
+    df = pd.DataFrame([row])
+    price = price_model.predict(df)[0]
+
+    return {
+        "estimated_price_inr": int(price)
+    }
